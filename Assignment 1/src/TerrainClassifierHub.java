@@ -14,9 +14,9 @@ public class TerrainClassifierHub {
         String line = darkly.nextLine();
         Scanner lineScanner = new Scanner(line);
         lineScanner.useDelimiter(" ");
-        int x = Integer.parseInt(lineScanner.next());
-        int y = Integer.parseInt(lineScanner.next());
-        float [][] terrain = new float[x][y];
+        int x = lineScanner.nextInt();
+        int y = lineScanner.nextInt();
+        float [][] terrain = new float[y][x];
         lineScanner.close();
         
         //populating the terrain data into the array
@@ -24,9 +24,9 @@ public class TerrainClassifierHub {
         lineScanner = new Scanner(line);
         lineScanner.useDelimiter(" ");
 
-        for (int i = 0; i < x; i++) 
+        for (int i = 0; i < y; i++) 
         {
-            for (int j = 0; j < y; j++) 
+            for (int j = 0; j < x; j++) 
             {
                 terrain[i][j] = lineScanner.nextFloat();
             }

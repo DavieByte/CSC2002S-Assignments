@@ -47,7 +47,7 @@ public class SequencialTerrainClassifier
                     }
                 }
 
-                if (counter == 6) 
+                if (counter == 8) 
                 {
                     basins++;
                     coordinates.add(i + " " + j);

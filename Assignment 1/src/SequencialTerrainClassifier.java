@@ -75,7 +75,7 @@ public class SequencialTerrainClassifier
 
     public void printFile() throws IOException
     {
-        String fileName = outputFileName + "_out(new).txt";
+        String fileName = outputFileName + "_out(sequencial).txt";
         File file = new File(fileName);
         file.createNewFile();
         

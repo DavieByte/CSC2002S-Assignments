@@ -130,7 +130,7 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
 
     public void writeToFile() throws IOException
     {
-        String fileName = outputFileName + "_out(new).txt";
+        String fileName = outputFileName + "_out(fork/join).txt";
         File file = new File(fileName);
         file.createNewFile();
 
@@ -142,7 +142,7 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
         {
             output += iterator.next() + "\n";
         }
-        
+
         writer.write(output);
         writer.close();
     }

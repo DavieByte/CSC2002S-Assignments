@@ -5,19 +5,36 @@ import java.util.ArrayList;
 
 public class SequencialTerrainClassifier 
 {
-    private float[][] terrainData;
-    private int basins;
-    private ArrayList<String> coordinates;
+    float[][] terrainData; //stores terrain data
+    int basins;
+    ArrayList<String> coordinates; //stores the coordinates of the basins
+    String outputFileName = "";
 
-    public SequencialTerrainClassifier(float[][] data) 
+    public SequencialTerrainClassifier(float[][] data, String outputFileName) 
     {
         terrainData = data;
         basins = 0;
         coordinates = new ArrayList<String>(4);
+        this.outputFileName = outputFileName;
     }
 
     public void scanTerrain() throws IOException 
     {
+    /*
+      _ _ _ ____________ 
+      y -1  |x-1| x |x+1| 
+      _ _ _ |___|___|___| 
+      y     |x-1| x |x+1| 
+      _ _ _ |___|_*_|___| 
+      y+1   |x-1| x |x+1| 
+      _ _ _ |___|___|___|
+      
+      >The anchor point is where the '*' symbol is. 
+      >Essentially I'm traversing through the entire 2D terrainData array and creating these blocks. 
+      >Then I'm taking the anchor point and comparing it with the values surrounding it. 
+      
+    */
+        
         float compare = 0;
         float[] values = new float[8];
         int counter = 0;
@@ -54,16 +71,15 @@ public class SequencialTerrainClassifier
                 }
             }
         }
-
-        printFile();
     }
 
-    private void printFile() throws IOException
+    public void printFile() throws IOException
     {
-        File file = new File("output.txt");
+        String fileName = outputFileName + "_out(new).txt";
+        File file = new File(fileName);
         file.createNewFile();
         
-        FileWriter writer = new FileWriter("output.txt");
+        FileWriter writer = new FileWriter(fileName);
         String output = basins + "\n";
         for (String positions : coordinates) 
         {

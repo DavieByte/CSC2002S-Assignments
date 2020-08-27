@@ -1,6 +1,5 @@
 import java.util.concurrent.RecursiveTask;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -34,15 +33,13 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
     float compare; // terrain value of the anchor point
     CopyOnWriteArrayList<String> coordinates; // stores the anchor value provided it passes the test
     int basins = 0;
-    String outputFileName = "";
 
-    public FJTerrainClassifier(float[][] terrainData, int anchorX, int anchorY, int cutoff, String outputFileName) 
+    public FJTerrainClassifier(float[][] terrainData, int anchorX, int anchorY, int cutoff) 
     {
         data = terrainData;
         this.anchorX = anchorX;
         this.anchorY = anchorY;
         SEQUENTIAL_CUTOFF = cutoff;
-        this.outputFileName = outputFileName;
         coordinates = new CopyOnWriteArrayList<String>();
 
         // filling in the terrain values of the block in the diagram above
@@ -81,7 +78,7 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
             return basins; // say return 1 in case this causes more basins in the output
         }
 
-        FJTerrainClassifier down = new FJTerrainClassifier(data, anchorX, anchorY + 1, SEQUENTIAL_CUTOFF, outputFileName);
+        FJTerrainClassifier down = new FJTerrainClassifier(data, anchorX, anchorY + 1, SEQUENTIAL_CUTOFF);
         FJTerrainClassifier right;
 
         if (SEQUENTIAL_CUTOFF - anchorY != 1) 
@@ -101,7 +98,7 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
         >This if statement causes these blocks to shift downwards recursively until it hits
         the bottom of the 2D array
         */
-            down = new FJTerrainClassifier(data, anchorX, anchorY + 1, SEQUENTIAL_CUTOFF, outputFileName);
+            down = new FJTerrainClassifier(data, anchorX, anchorY + 1, SEQUENTIAL_CUTOFF);
             down.fork();
         } 
         else 
@@ -119,7 +116,7 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
         >Once the down shifting blocks hit the bottom, the anchorY shift back up to 1
         and the anchorX shifts one unit to the right and starts the process all over again 
         */
-            right = new FJTerrainClassifier(data, anchorX + 1, 1, SEQUENTIAL_CUTOFF, outputFileName);
+            right = new FJTerrainClassifier(data, anchorX + 1, 1, SEQUENTIAL_CUTOFF);
             basins += right.compute();
         }
 
@@ -128,22 +125,29 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
         return basins;
     }
 
-    public void writeToFile() throws IOException
+    public void writeToFile(String fileName) throws IOException
     {
-        String fileName = outputFileName + "_out(fork/join).txt";
-        File file = new File(fileName);
-        file.createNewFile();
-
-        FileWriter writer = new FileWriter(fileName);
-        String output = basins + "\n";
-        Iterator<String> iterator = coordinates.iterator();
-
-        while(iterator.hasNext())
+        String file = "";
+        if(fileName.contains("small"))
         {
-            output += iterator.next() + "\n";
+            file = "small_out(fj).txt";
+        }
+        else if(fileName.contains("med"))
+        {
+            file = "med_out(fj).txt";
+        }
+        else if(fileName.contains("large"))
+        {
+            file = "large_out(fj).txt";
         }
 
-        writer.write(output);
+        PrintWriter writer = new PrintWriter(file);
+        String output = basins + "\n";
+        for (String positions : coordinates) 
+        {
+            output += positions + "\n";    
+        }
+        writer.print(output);
         writer.close();
     }
 

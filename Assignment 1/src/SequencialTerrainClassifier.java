@@ -1,6 +1,5 @@
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class SequencialTerrainClassifier 
@@ -8,14 +7,13 @@ public class SequencialTerrainClassifier
     float[][] terrainData; //stores terrain data
     int basins;
     ArrayList<String> coordinates; //stores the coordinates of the basins
-    String outputFileName = "";
 
-    public SequencialTerrainClassifier(float[][] data, String outputFileName) 
+
+    public SequencialTerrainClassifier(float[][] data) 
     {
         terrainData = data;
         basins = 0;
         coordinates = new ArrayList<String>(4);
-        this.outputFileName = outputFileName;
     }
 
     public void scanTerrain() throws IOException 
@@ -73,19 +71,29 @@ public class SequencialTerrainClassifier
         }
     }
 
-    public void printFile() throws IOException
+    public void printFile(String fileName) throws IOException
     {
-        String fileName = outputFileName + "_out(sequencial).txt";
-        File file = new File(fileName);
-        file.createNewFile();
-        
-        FileWriter writer = new FileWriter(fileName);
+        String file = "";
+        if(fileName.contains("small"))
+        {
+            file = "small_out(sequencial).txt";
+        }
+        else if(fileName.contains("med"))
+        {
+            file = "med_out(sequencial).txt";
+        }
+        else if(fileName.contains("large"))
+        {
+            file = "large_out(sequencial).txt";
+        }
+
+        PrintWriter writer = new PrintWriter(file);
         String output = basins + "\n";
         for (String positions : coordinates) 
         {
             output += positions + "\n";    
         }
-        writer.write(output);
+        writer.print(output);
         writer.close();
     }
 

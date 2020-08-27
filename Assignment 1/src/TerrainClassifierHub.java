@@ -62,21 +62,16 @@ public class TerrainClassifierHub
             out.close();
         }
         else if(inputFileName.contains("large"))
-        {
+        {        
             out = new BufferedWriter(new FileWriter("fj_large_times.csv", true));
             out.write("," + time);
             out.close();
         }
     }
 
-    static final ForkJoinPool fjPool = new ForkJoinPool();
-    static float startTime = 0.0f;
-
-    public static void main(final String[] args) throws IOException 
+    private static float[][] terrainData(File terrainFile) throws IOException
     {
-        //getting the file name from the user and setting up the scanner to read from the file
-        String fileName = args[0];
-        File file = new File(fileName);
+        File file = terrainFile;
         Scanner darkly = new Scanner(file);
         
         //initializing the size of the array of the terrain data
@@ -104,27 +99,63 @@ public class TerrainClassifierHub
         darkly.close();
         lineScanner.close();
 
-        String outputFileName = fileName.substring(0, fileName.length() - 7);
+        return terrain;
+    }
 
-        SequencialTerrainClassifier stc = new SequencialTerrainClassifier(terrain, outputFileName);
-        FJTerrainClassifier fjtc = new FJTerrainClassifier(terrain, 1, 1, terrain.length, outputFileName);
-
-        //running sequencial algorithm
+    private static void runSequencialTest(SequencialTerrainClassifier stc, float[][] data, String fileName) throws IOException
+    {
         float time = 0.0f;
-        tick();
-        stc.scanTerrain();
-        time = tock();
-        stc.printFile();
-        sequencialTimeWrite(fileName, time);
+        for (int i = 0; i < 10; i++) 
+        {
+            stc = new SequencialTerrainClassifier(data);
+            time = 0.0f;
+            tick();
+            stc.scanTerrain();
+            time = tock();
+            stc.printFile(fileName);
+            fjTimeWrite(fileName, time);
+        }
+    }
 
-        //running fork join threading algorithm
-        time = 0.0f;
-        tick();
-        fjtc.invoke();
-        time = tock();
-        fjtc.writeToFile();
-        fjTimeWrite(fileName, time);
-        
+    private static void runFJTest(FJTerrainClassifier fjtc, float[][] data, String fileName) throws IOException
+    {
+        float time = 0.0f;
+        for (int i = 0; i < 10; i++) 
+        {
+            fjtc = new FJTerrainClassifier(data, 1, 1, data.length);
+            time = 0.0f;
+            tick();
+            fjtc.invoke();
+            time = tock();
+            fjtc.writeToFile(fileName);
+            sequencialTimeWrite(fileName, time);
+        }
+    }
+
+    static final ForkJoinPool fjPool = new ForkJoinPool();
+    static float startTime = 0.0f;
+
+    public static void main(String[] args) throws IOException 
+    {
+        File smallFile = new File("small_in.txt");
+        File medFile = new File("med_in.txt");
+        File largeFile = new File("large_in.txt");
+
+        float[][] small = terrainData(smallFile);
+        float[][] med = terrainData(medFile);
+        float[][] large = terrainData(largeFile);
+
+        SequencialTerrainClassifier stc = new SequencialTerrainClassifier(small);
+        FJTerrainClassifier fjtc = new FJTerrainClassifier(small, 1, 1, small.length);
+
+        runSequencialTest(stc, small, "small");
+        runSequencialTest(stc, med, "med");
+        runSequencialTest(stc, large, "large");
+
+        runFJTest(fjtc, small, "small");
+        runFJTest(fjtc, med, "med");
+        runFJTest(fjtc, large, "large");
+
     }
 
 }

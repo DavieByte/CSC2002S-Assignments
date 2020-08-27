@@ -5,7 +5,7 @@ JFLAGS = -g
 all:
 	mkdir -p bin
 	$(JCC) $(JFLAGS) src/*.java  -d bin
-	$(JCR) -cp bin TerrainClassifierHub
+	$(JCR) -Xmx256m -cp  bin TerrainClassifierHub
 
 clean:
 	$(RM) bin/*.class

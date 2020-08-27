@@ -3,6 +3,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.util.Scanner;
 import java.util.concurrent.ForkJoinPool;
 
@@ -87,12 +89,14 @@ public class TerrainClassifierHub
         line = darkly.nextLine();
         lineScanner = new Scanner(line);
         lineScanner.useDelimiter(" ");
+        String temp = "";
 
         for (int i = 0; i < y; i++) 
         {
             for (int j = 0; j < x; j++) 
             {
-                terrain[i][j] = lineScanner.nextFloat();
+                temp = lineScanner.next();
+                terrain[i][j] = Float.parseFloat(temp);
             }
         }
 
@@ -113,26 +117,41 @@ public class TerrainClassifierHub
             stc.scanTerrain();
             time = tock();
             stc.printFile(fileName);
-            fjTimeWrite(fileName, time);
-        }
-    }
-
-    private static void runFJTest(FJTerrainClassifier fjtc, float[][] data, String fileName) throws IOException
-    {
-        float time = 0.0f;
-        for (int i = 0; i < 10; i++) 
-        {
-            fjtc = new FJTerrainClassifier(data, 1, 1, data.length);
-            time = 0.0f;
-            tick();
-            fjtc.invoke();
-            time = tock();
-            fjtc.writeToFile(fileName);
             sequencialTimeWrite(fileName, time);
         }
     }
 
-    static final ForkJoinPool fjPool = new ForkJoinPool();
+    private static void runFJTest(ForkJoinPool pool,FJTerrainClassifier fjtc, float[][] data, String fileName) throws IOException
+    {
+        float time = 0.0f;
+        int basins = 0;
+        RandomAccessFile firstLine;
+        FileWriter temp;
+        PrintWriter wipe;
+
+        for (int i = 0; i < 10; i++) 
+        {
+            temp = new FileWriter(fileName, false); 
+            wipe = new PrintWriter(temp, false);
+            temp.flush();
+            wipe.close();
+            temp.close();
+            
+            basins = 0;
+            fjtc = new FJTerrainClassifier(data, 1, 1, data.length,fileName);
+            time = 0.0f;
+            tick();
+            basins = pool.invoke(fjtc);
+            time = tock();
+            fjTimeWrite(fileName, time);
+
+            firstLine = new RandomAccessFile(new File(fileName), "rw");
+            firstLine.seek(0); // to the beginning
+            firstLine.write((basins + "\n").getBytes());
+            firstLine.close();
+        }
+    }
+
     static float startTime = 0.0f;
 
     public static void main(String[] args) throws IOException 
@@ -145,17 +164,20 @@ public class TerrainClassifierHub
         float[][] med = terrainData(medFile);
         float[][] large = terrainData(largeFile);
 
+        ForkJoinPool pool = new ForkJoinPool();
+
         SequencialTerrainClassifier stc = new SequencialTerrainClassifier(small);
-        FJTerrainClassifier fjtc = new FJTerrainClassifier(small, 1, 1, small.length);
+        FJTerrainClassifier fjtc = new FJTerrainClassifier(small, 1, 1, small.length,"small");
 
         runSequencialTest(stc, small, "small");
         runSequencialTest(stc, med, "med");
         runSequencialTest(stc, large, "large");
 
-        runFJTest(fjtc, small, "small");
-        runFJTest(fjtc, med, "med");
-        runFJTest(fjtc, large, "large");
+        runFJTest(pool, fjtc, small, "small_out(fj).txt");
+        runFJTest(pool, fjtc, med, "med_out(fj).txt");
+        runFJTest(pool, fjtc, large, "large_out(fj).txt");
 
+        pool.shutdown();
     }
 
 }

@@ -1,30 +1,30 @@
-package FlowSkeleton;
-
 import javax.swing.*;
-
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.BorderLayout;
 
-public class Flow {
+public class Flow 
+{
 	static long startTime = 0;
 	static int frameX;
 	static int frameY;
 	static FlowPanel fp;
 
 	// start timer
-	private static void tick(){
+	private static void tick()
+	{
 		startTime = System.currentTimeMillis();
 	}
 	
 	// stop timer, return time elapsed in seconds
-	private static float tock(){
+	private static float tock()
+	{
 		return (System.currentTimeMillis() - startTime) / 1000.0f; 
 	}
 	
-	public static void setupGUI(int frameX,int frameY,Terrain landdata) {
-		
+	public static void setupGUI(int frameX,int frameY,Terrain landdata) 
+	{
 		Dimension fsize = new Dimension(800, 800);
     	JFrame frame = new JFrame("Waterflow"); 
     	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -43,8 +43,10 @@ public class Flow {
 	    b.setLayout(new BoxLayout(b, BoxLayout.LINE_AXIS));
 		JButton endB = new JButton("End");;
 		// add the listener to the jbutton to handle the "pressed" event
-		endB.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
+		endB.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
 				// to do ask threads to stop
 				frame.dispose();
 			}
@@ -63,7 +65,8 @@ public class Flow {
 	}
 	
 		
-	public static void main(String[] args) {
+	public static void main(String[] args) 
+	{
 		Terrain landdata = new Terrain();
 		
 		// check that number of command line arguments is correct

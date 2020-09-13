@@ -65,11 +65,10 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
     @Override
     protected Integer compute()
     {
+        System.out.println(anchorX + " " + anchorY);
         FJTerrainClassifier down = new FJTerrainClassifier(data, anchorX, anchorY + 1, SEQUENTIAL_CUTOFF, file);
         FJTerrainClassifier right = new FJTerrainClassifier(data, anchorX + 1, 1, SEQUENTIAL_CUTOFF, file);
 
-        if (SEQUENTIAL_CUTOFF - anchorY != 2 && SEQUENTIAL_CUTOFF - anchorX != 2) 
-        {
             // testing to see if the values surrounding the anchor point to varify that it
             // is a basin or not
             int counter = 0;
@@ -93,10 +92,8 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
                 }
                 return 1;
             }
-        }
-
-
-        if (SEQUENTIAL_CUTOFF - anchorY != 2) 
+        
+        if(SEQUENTIAL_CUTOFF - anchorY != 2) 
         {
         /*
          _ _ _ ____________ 
@@ -114,9 +111,9 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
         the bottom of the 2D array
         */
             down.fork();
-        } 
 
-        else if(SEQUENTIAL_CUTOFF - anchorY == 2 && SEQUENTIAL_CUTOFF - anchorX > 2)
+        } 
+        if(SEQUENTIAL_CUTOFF - anchorY == 2 && SEQUENTIAL_CUTOFF - anchorX != 2)
         {
         /*
          _ _ _ ____________ ___
@@ -131,11 +128,15 @@ public class FJTerrainClassifier extends RecursiveTask<Integer>
         >Once the down shifting blocks hit the bottom, the anchorY shift back up to 1
         and the anchorX shifts one unit to the right and starts the process all over again 
         */
-            right.compute();
+        right.fork();
         }
-
-        basins+= right.join();
+        
+        else
+        {
         basins += down.join();
+        basins += right.join();
+        return basins;
+        }
         return basins;
     }
 

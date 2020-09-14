@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.BorderLayout;
 
-public class Flow 
+public class Flow extends frame implements MouseListener
 {
 	static long startTime = 0;
 	static int frameX;
@@ -64,11 +64,10 @@ public class Flow
         fpt.start();
 	}
 	
-		
+	
+	
 	public static void main(String[] args) 
-	{
-		Terrain landdata = new Terrain();
-		
+	{		
 		// check that number of command line arguments is correct
 		if(args.length != 1)
 		{
@@ -77,13 +76,61 @@ public class Flow
 		}
 				
 		// landscape information from file supplied as argument
-		// 
-		landdata.readData(args[0]);
+		Terrain landData = new Terrain(args[0]);
+		waterTerrain waterData = new waterTerrain(landData);
 		
-		frameX = landdata.getDimX();
-		frameY = landdata.getDimY();
+		frameX = landData.getDimX();
+		frameY = landData.getDimY();
 		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landdata));
+
+		new mouseListener(); 
 		
 		// to do: initialise and start simulation
 	}
+}
+
+public class mouseListener extends Frame implements MouseListener
+{
+	public void mouseClicked(MouseEvent e) 
+	{  
+        Graphics g=getGraphics();  
+        g.setColor(Color.BLUE);  
+		g.fillOval(e.getX(),e.getY(),30,30); 
+		
+		int x = Math.round(e.getX());
+        int y = Math.round(e.getY());
+
+        /*
+         _ _ _ ____________ 
+         y -1  |x-1| x |x+1|
+         _ _ _ |___|___|___|
+         y     |x-1| x |x+1|
+         _ _ _ |___|_*_|___|
+         y+1   |x-1| x |x+1|
+         _ _ _ |___|___|___|
+
+         A user click should add 3 units of water to the terrain grid in this manner, 
+         then proceed to spread to lower elevations.
+               
+        */
+
+        int add = 3;
+
+        setHeight(x, y, add);
+        setHeight(x-1, y, add);
+        setHeight(x+1, y, add);
+
+        setHeight(x, y-1, add);
+        setHeight(x-1, y-1, add);
+        setHeight(x+1, y-1, add);
+        
+        setHeight(x, y+1, add);
+        setHeight(x-1, y+1, add);
+        setHeight(x+1, y+1, add);  
+    }  
+	
+	public void mouseEntered(MouseEvent e) {}  
+    public void mouseExited(MouseEvent e) {}  
+    public void mousePressed(MouseEvent e) {}  
+    public void mouseReleased(MouseEvent e) {}  
 }

@@ -41,7 +41,7 @@ public class Terrain
 	}
 	
 	// get x-dimensions (number of columns)
-	int getDimX()
+	public int getDimX()
 	{
 		return dimx;
 	}

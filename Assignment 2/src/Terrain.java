@@ -13,9 +13,29 @@ public class Terrain
 	BufferedImage img; // greyscale image for displaying the terrain top-down
 
 	ArrayList<Integer> permute;	// permuted list of integers in range [0, dimx*dimy)
+
+	public Terrain(String fileName)
+	{
+		readData(fileName);
+	}
+	
+	public float getHeight(int x, int y)
+	{
+		return height[x][y];
+	}
+
+	public void setHeight(int x, int y, float add)
+	{
+		height[x][y] += add;
+	}
+
+	public float[][] getHeightArr()
+	{
+		return height;
+	}
 	
 	// overall number of elements in the height grid
-	int dim()
+	public int dim()
 	{
 		return dimx*dimy;
 	}
@@ -27,7 +47,7 @@ public class Terrain
 	}
 	
 	// get y-dimensions (number of rows)
-	int getDimY()
+	public int getDimY()
 	{
 		return dimy;
 	}
@@ -39,14 +59,14 @@ public class Terrain
 	}
 	
 	// convert linear position into 2D location in grid
-	void locate(int pos, int [] ind)
+	public void locate(int pos, int [] ind)
 	{
 		ind[0] = (int) pos / dimy; // x
 		ind[1] = pos % dimy; // y	
 	}
 	
 	// convert height values to greyscale colour and populate an image
-	void deriveImage()
+	public void deriveImage()
 	{
 		img = new BufferedImage(dimx, dimy, BufferedImage.TYPE_INT_ARGB);
 		float maxh = -10000.0f, minh = 10000.0f;
@@ -74,7 +94,7 @@ public class Terrain
 	
 	// generate a permuted list of linear index positions to allow a random
 	// traversal over the terrain
-	void genPermute() 
+	public void genPermute() 
 	{
 		permute = new ArrayList<Integer>();
 		for(int idx = 0; idx < dim(); idx++)
@@ -84,13 +104,13 @@ public class Terrain
 	
 	// find permuted 2D location from a linear index in the
 	// range [0, dimx*dimy)
-	void getPermute(int i, int [] loc) 
+	public void getPermute(int i, int [] loc) 
 	{
 		locate(permute.get(i), loc);
 	}
 	
 	// read in terrain from file
-	void readData(String fileName)
+	public void readData(String fileName)
 	{ 
 		try{ 
 			Scanner sc = new Scanner(new File(fileName));

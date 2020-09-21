@@ -3,134 +3,183 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.BorderLayout;
+//import java.awt.*;  
+import java.awt.event.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Flow extends frame implements MouseListener
-{
+public class Flow extends JFrame {
 	static long startTime = 0;
 	static int frameX;
 	static int frameY;
 	static FlowPanel fp;
+	static Terrain landData;
+	static waterTerrain waterData;
+	static ExecutorService pool;
 
 	// start timer
-	private static void tick()
+	private static void tick() 
 	{
 		startTime = System.currentTimeMillis();
 	}
-	
+
 	// stop timer, return time elapsed in seconds
-	private static float tock()
+	private static float tock() 
 	{
-		return (System.currentTimeMillis() - startTime) / 1000.0f; 
+		return (System.currentTimeMillis() - startTime) / 1000.0f;
 	}
-	
-	public static void setupGUI(int frameX,int frameY,Terrain landdata) 
+
+	public static void setupGUI(int frameX, int frameY, Terrain landdata) 
 	{
+		// setting up frame
 		Dimension fsize = new Dimension(800, 800);
-    	JFrame frame = new JFrame("Waterflow"); 
-    	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    	frame.getContentPane().setLayout(new BorderLayout());
-    	
-      	JPanel g = new JPanel();
-        g.setLayout(new BoxLayout(g, BoxLayout.PAGE_AXIS)); 
-   
-		fp = new FlowPanel(landdata);
-		fp.setPreferredSize(new Dimension(frameX,frameY));
+		JFrame frame = new JFrame("Waterflow");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(new BorderLayout());
+
+		// setting up panel
+		JPanel g = new JPanel();
+		g.setLayout(new BoxLayout(g, BoxLayout.PAGE_AXIS));
+
+		// FlowPanel object
+		fp = new FlowPanel(landData, waterData);
+		fp.setPreferredSize(new Dimension(frameX, frameY));
 		g.add(fp);
-	    
-		// to do: add a MouseListener, buttons and ActionListeners on those buttons
-	   	
+
+		// adds bottom panel for buttons
 		JPanel b = new JPanel();
-	    b.setLayout(new BoxLayout(b, BoxLayout.LINE_AXIS));
-		JButton endB = new JButton("End");;
-		// add the listener to the jbutton to handle the "pressed" event
-		endB.addActionListener(new ActionListener()
+		b.setLayout(new BoxLayout(b, BoxLayout.LINE_AXIS));
+
+		// implementing action listeners for mouse and buttons
+		frame.addMouseListener(new MouseAdapter() 
 		{
-			public void actionPerformed(ActionEvent e)
+			public void mousePressed(MouseEvent e) 
+			{
+				int x = e.getX();
+				int y = e.getY();
+				// _ _ _ ____________
+				// y -1 |x-1| x |x+1|
+				// _ _ _|___|___|___|
+				// y 	|x-1| x |x+1|
+				// _ _ _|___|_*_|___|
+				// y+1  |x-1| x |x+1|
+				// _ _ _|___|___|___|
+
+				// A user click should add 3 units of water to the terrain grid in this manner,
+				// then proceed to spread to lower elevations.
+				int add = 3;
+
+				waterData.setHeight(x, y, add);
+				waterData.setHeight(x - 1, y, add);
+				waterData.setHeight(x + 1, y, add);
+
+				waterData.setHeight(x, y - 1, add);
+				waterData.setHeight(x - 1, y - 1, add);
+				waterData.setHeight(x + 1, y - 1, add);
+
+				waterData.setHeight(x, y + 1, add);
+				waterData.setHeight(x - 1, y + 1, add);
+				waterData.setHeight(x + 1, y + 1, add);
+
+				fp.deriveWaterImage();
+				fp.repaint();
+			}
+		});
+
+		JButton endB = new JButton("End");
+		;
+		endB.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
 			{
 				// to do ask threads to stop
+				pool.shutdown();
 				frame.dispose();
 			}
 		});
-		
+
+		JButton startB = new JButton("Start");
+		startB.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				pool.notifyAll();
+			}
+		});
+
+		JButton pauseB = new JButton("Pause");
+		pauseB.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				try 
+				{
+					pool.wait();
+				} 
+				catch (InterruptedException e1) 
+				{
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		JButton resetB = new JButton("Reset");
+		resetB.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				waterData.reset();
+				fp.deriveWaterImage();
+				fp.repaint();
+			}
+		});
+
+		b.add(startB);
+		b.add(pauseB);
+		b.add(pauseB);
+		b.add(resetB);
 		b.add(endB);
 		g.add(b);
     	
-		frame.setSize(frameX, frameY+50);	// a little extra space at the bottom for buttons
+		frame.setSize(frameX, frameY+50);
       	frame.setLocationRelativeTo(null);  // center window on screen
       	frame.add(g); //add contents to window
         frame.setContentPane(g);
         frame.setVisible(true);
-        Thread fpt = new Thread(fp);
-        fpt.start();
+        
 	}
-	
 	
 	
 	public static void main(String[] args) 
 	{		
 		// check that number of command line arguments is correct
-		if(args.length != 1)
-		{
-			System.out.println("Incorrect number of command line arguments. Should have form: java -jar flow.java intputfilename");
-			System.exit(0);
-		}
+		//if(args.length != 1)
+		//{
+		//	System.out.println("Incorrect number of command line arguments. Should have form: java -jar flow.java intputfilename");
+		//	System.exit(0);
+		//}
+
+		JOptionPane pane = new JOptionPane();
+		String fileName = pane.showInputDialog("Input file name");
 				
 		// landscape information from file supplied as argument
-		Terrain landData = new Terrain(args[0]);
-		waterTerrain waterData = new waterTerrain(landData);
+		landData = new Terrain(fileName);
+		waterData = new waterTerrain(landData);
 		
 		frameX = landData.getDimX();
 		frameY = landData.getDimY();
-		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landdata));
+		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landData));
 
-		new mouseListener(); 
+		//creating threads
+		Runnable waterFlowCalculations = waterData;
+		Runnable waterPanel = fp;
 		
-		// to do: initialise and start simulation
+		// creating task pool for threads
+		pool = Executors.newFixedThreadPool(3);
+
+		//executing threads from task pool
+		pool.execute(waterFlowCalculations);
+		pool.execute(waterPanel);
+		
 	}
-}
-
-public class mouseListener extends Frame implements MouseListener
-{
-	public void mouseClicked(MouseEvent e) 
-	{  
-        Graphics g=getGraphics();  
-        g.setColor(Color.BLUE);  
-		g.fillOval(e.getX(),e.getY(),30,30); 
-		
-		int x = Math.round(e.getX());
-        int y = Math.round(e.getY());
-
-        /*
-         _ _ _ ____________ 
-         y -1  |x-1| x |x+1|
-         _ _ _ |___|___|___|
-         y     |x-1| x |x+1|
-         _ _ _ |___|_*_|___|
-         y+1   |x-1| x |x+1|
-         _ _ _ |___|___|___|
-
-         A user click should add 3 units of water to the terrain grid in this manner, 
-         then proceed to spread to lower elevations.
-               
-        */
-
-        int add = 3;
-
-        setHeight(x, y, add);
-        setHeight(x-1, y, add);
-        setHeight(x+1, y, add);
-
-        setHeight(x, y-1, add);
-        setHeight(x-1, y-1, add);
-        setHeight(x+1, y-1, add);
-        
-        setHeight(x, y+1, add);
-        setHeight(x-1, y+1, add);
-        setHeight(x+1, y+1, add);  
-    }  
-	
-	public void mouseEntered(MouseEvent e) {}  
-    public void mouseExited(MouseEvent e) {}  
-    public void mousePressed(MouseEvent e) {}  
-    public void mouseReleased(MouseEvent e) {}  
 }

@@ -2,14 +2,17 @@ import java.awt.image.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.ListIterator;
 //import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Scanner;
 
-public class waterTerrain 
+public class waterTerrain implements Runnable
 {
     float [][] height; // regular grid of height values
-    int dimx, dimy; // data dimensions
+    int dimx, dimy; // data dimensionsnew String(x + "," + y)
     Terrain ground;
-    ArrayList <Integer> waterLocations = new ArrayList<Integer>();
+    ArrayList <String> waterLocations = new ArrayList<String>();
+    ListIterator<String> iterator = waterLocations.listIterator();
     BufferedImage waterImage;
 
     
@@ -38,7 +41,7 @@ public class waterTerrain
         if(x != 0 || y != 0 || x != dimx || y != dimy)
         {
             height[x][y] += add*0.1;
-            waterLocations.add(x*y);
+            iterator.add(x + "," + y);
         }
         else
         {
@@ -47,21 +50,26 @@ public class waterTerrain
         if(height[x][y] < 0)
         {
             height[x][y] = 0;
+            iterator.remove();
         }
     }
 
     public void deriveWaterImage()
 	{
-		Iterator <Integer> iterator = waterLocations.iterator();
+		Iterator <String> iterator = waterLocations.iterator();
 		Color color = Color.blue;
-        int x,y, location;
+        int x,y;
+        String location = "";
         waterImage = new BufferedImage(ground.dimx, ground.dimy, BufferedImage.TYPE_INT_ARGB);
+        Scanner lineScanner;
 		
 		while(iterator.hasNext())
 		{
-			location = iterator.next();
-			x = (int) location / ground.dimy;
-			y = location % ground.dimy;
+            location = iterator.next();
+            lineScanner = new Scanner(location);
+            lineScanner.useDelimiter(",");
+			x = Integer.parseInt(lineScanner.next());
+            y = Integer.parseInt(lineScanner.next());
 			waterImage.setRGB(x, y, color.getRGB());
 		}
     }
@@ -76,6 +84,7 @@ public class waterTerrain
     {
         return waterLocations;
     }
+    */
 
     public void run()
     {
@@ -87,44 +96,59 @@ public class waterTerrain
         // y+1   |x-1| x |x+1|
         // _ _ _ |___|___|___|
         //The 'centre' varible is the corresponding height value of block with the * in it
-        Iterator<Integer> iterator = waterLocations.iterator();
-        int location, x, y;
+        iterator = waterLocations.listIterator();
+        int x,y;
+        String location = "";
+        Scanner lineScanner = new Scanner(location);
+
         while(iterator.hasNext())
         {
             location = iterator.next();
-            x = (int) location / ground.dimy;
-			y = location % ground.dimy;
+            lineScanner = new Scanner(location);
+            lineScanner.useDelimiter(",");
+            x = Integer.parseInt(lineScanner.next());
+            y = Integer.parseInt(lineScanner.next());
 
             float centre = height[x][y] + ground.getHeight(x, y);
             int waterStacks = (int)(height[x][y] / 0.1);
             int isBasin = 0;
 
             //comparing centre with its neighboring height values
-            for (int i = -1; i < 2; i++) 
+            if(centre > 0.0f)
             {
-                for (int j = -1; j < 2; j++) 
+                for (int i = -1; i < 2; i++) 
                 {
-                    if(i != x && j != y)
+                    for (int j = -1; j < 2; j++) 
                     {
-                        if(centre - (height[i][j] + ground.getHeight(i, j)) > 0.0001)
-                        {   
-                            setHeight(i, j, waterStacks - 1);
-                        }
-                        else
+                        if(i != x && j != y)
                         {
-                            isBasin++;
+                            if(centre - (height[x + i][y + j] + ground.getHeight(x + i, y + j)) > 0.0001)
+                            {   
+                                setHeight(x + i, y + j, waterStacks - 1);
+                            }
+                            else
+                            {
+                                isBasin++;
+                            }
                         }
                     }
                 }
+
+                if(isBasin != 8)
+                {
+                    setHeight(x, y, -1);
+                }
+            }
+            else if(centre == 0.0f)
+            {
+                iterator.remove();
             }
 
-            if(isBasin != 8)
-            {
-                setHeight(x, y, -1);
-            }
         }
 
+        lineScanner.close();
+
     }
-    */
+    
 
 }

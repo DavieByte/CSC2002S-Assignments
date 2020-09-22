@@ -1,5 +1,5 @@
 //import java.awt.event.*;
-import java.util.Iterator;
+//import java.util.Iterator;
 //import java.util.concurrent.CopyOnWriteArrayList;
 import java.awt.*; 
 import java.awt.image.*;
@@ -7,6 +7,7 @@ import javax.swing.*;
 
 public class FlowPanel extends JPanel
 {
+	private static final long serialVersionUID = 1L;
 	Terrain land;
 	waterTerrain water;
 	//CopyOnWriteArrayList<Integer> waterLocations;
@@ -26,7 +27,7 @@ public class FlowPanel extends JPanel
 	// responsible for painting the terrain and water
 	// as images
 	@Override
-	protected void paintComponent(Graphics g) 
+	public void paintComponent(Graphics g) 
 	{	  
 		super.paintComponent(g);
 		
@@ -36,11 +37,12 @@ public class FlowPanel extends JPanel
 			g.drawImage(land.getImage(), 0, 0, null);
 		}
 
-		if(waterImage != null)
+		if(water.getImage() != null)
 		{
 			g.drawImage(water.getImage(), 0, 0, null);
 		}
 	}
+
 	/*
 	public void deriveWaterImage()
 	{

@@ -29,7 +29,7 @@ public class Flow extends JFrame {
 		return (System.currentTimeMillis() - startTime) / 1000.0f;
 	}
 
-	public static void setupGUI(int frameX, int frameY, Terrain landdata, FlowPanel fp) 
+	public static void setupGUI(int frameX, int frameY, Terrain landdata, waterTerrain waterdata) 
 	{
 		// setting up frame
 		Dimension fsize = new Dimension(800, 800);
@@ -42,6 +42,7 @@ public class Flow extends JFrame {
 		g.setLayout(new BoxLayout(g, BoxLayout.PAGE_AXIS));
 
 		// FlowPanel object
+		FlowPanel fp = new FlowPanel(landData, waterData);
 		fp.setPreferredSize(new Dimension(frameX, frameY));
 		g.add(fp);
 
@@ -54,9 +55,8 @@ public class Flow extends JFrame {
 		{
 			public void mousePressed(MouseEvent e) 
 			{
-				int x = e.getX();//doesnt give true x or y
+				int x = e.getX();
 				int y = e.getY();
-				System.out.println(x + " " + y);
 				// _ _ _ ____________
 				// y -1 |x-1| x |x+1|
 				// _ _ _|___|___|___|
@@ -69,19 +69,19 @@ public class Flow extends JFrame {
 				// then proceed to spread to lower elevations.
 				int add = 3;
 
-				waterData.setHeight(x, y, add);
-				waterData.setHeight(x - 1, y, add);
-				waterData.setHeight(x + 1, y, add);
+				waterdata.setHeight(x, y, add);
+				waterdata.setHeight(x - 1, y, add);
+				waterdata.setHeight(x + 1, y, add);
 
-				waterData.setHeight(x, y - 1, add);
-				waterData.setHeight(x - 1, y - 1, add);
-				waterData.setHeight(x + 1, y - 1, add);
+				waterdata.setHeight(x, y - 1, add);
+				waterdata.setHeight(x - 1, y - 1, add);
+				waterdata.setHeight(x + 1, y - 1, add);
 
-				waterData.setHeight(x, y + 1, add);
-				waterData.setHeight(x - 1, y + 1, add);
-				waterData.setHeight(x + 1, y + 1, add);
+				waterdata.setHeight(x, y + 1, add);
+				waterdata.setHeight(x - 1, y + 1, add);
+				waterdata.setHeight(x + 1, y + 1, add);
 
-				waterData.deriveWaterImage();
+				waterdata.deriveWaterImage();
 				fp.repaint();
 			}
 		});
@@ -104,6 +104,9 @@ public class Flow extends JFrame {
 			public void actionPerformed(ActionEvent e) 
 			{
 				//pool.notifyAll();
+				waterdata.flow();
+				waterdata.deriveWaterImage();
+				fp.repaint();
 			}
 		});
 
@@ -166,12 +169,14 @@ public class Flow extends JFrame {
 		// landscape information from file supplied as argument
 		landData = new Terrain(fileName);
 		waterData = new waterTerrain(landData);
-		fp = new FlowPanel(landData, waterData);
+		//fp = new FlowPanel(landData, waterData);
 
 		frameX = landData.getDimX();
 		frameY = landData.getDimY();
-		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landData, fp));
+		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landData, waterData));
 
+		Thread flow = new Thread(waterData);
+		flow.start();
 
 
 		/*	

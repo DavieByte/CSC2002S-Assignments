@@ -104,9 +104,7 @@ public class Flow extends JFrame {
 			public void actionPerformed(ActionEvent e) 
 			{
 				//pool.notifyAll();
-				waterdata.flow();
-				waterdata.deriveWaterImage();
-				fp.repaint();
+				
 			}
 		});
 

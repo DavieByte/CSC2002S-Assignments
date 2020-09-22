@@ -1,4 +1,5 @@
 import java.awt.image.*;
+import java.lang.reflect.InvocationTargetException;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,7 +7,9 @@ import java.util.ListIterator;
 //import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Scanner;
 
-public class waterTerrain implements Runnable
+import javax.swing.SwingUtilities;
+
+public class waterTerrain 
 {
     float [][] height; // regular grid of height values
     int dimx, dimy; // data dimensionsnew String(x + "," + y)
@@ -14,6 +17,8 @@ public class waterTerrain implements Runnable
     ArrayList <String> waterLocations = new ArrayList<String>();
     ListIterator<String> iterator = waterLocations.listIterator();
     BufferedImage waterImage;
+    private volatile boolean noPauseRequested;
+    private Thread internalThread;
 
     
     public waterTerrain(Terrain ground)
@@ -23,9 +28,28 @@ public class waterTerrain implements Runnable
         dimy = ground.getDimY();
         height = new float[dimx][dimy];
         
+        noPauseRequested = true;
+        Runnable r = new Runnable()
+        {
+            public void run()
+            {
+                try
+                {
+                    flow();
+                }
+                catch(Exception x)
+                {
+                    x.printStackTrace();
+                }
+            }   
+        };
+
+        internalThread = new Thread(r, "Flow");
+
+       
     }
 
-    public void reset()
+    public synchronized void reset()
     {
         height = new float[dimx][dimy];
         waterLocations.clear();
@@ -36,7 +60,7 @@ public class waterTerrain implements Runnable
 		return height[x][y];
 	}
 
-	public void setHeight(int x, int y, int add)
+	public synchronized void setHeight(int x, int y, int add)
 	{
         if(x != 0 || y != 0 || x != dimx || y != dimy)
         {
@@ -54,9 +78,9 @@ public class waterTerrain implements Runnable
         }
     }
 
-    public void deriveWaterImage()
+    public synchronized void deriveWaterImage()
 	{
-		Iterator <String> iterator = waterLocations.iterator();
+        Iterator <String> iterator = waterLocations.iterator();
 		Color color = Color.blue;
         int x,y;
         String location = "";
@@ -74,7 +98,7 @@ public class waterTerrain implements Runnable
 		}
     }
     
-    public BufferedImage getImage() 
+    public synchronized BufferedImage getImage() 
 	{
 		  return waterImage;
 	}
@@ -86,7 +110,7 @@ public class waterTerrain implements Runnable
     }
     */
 
-    public void run()
+    public void flow()
     {
         // _ _ _ ____________ 
         // y -1  |x-1| x |x+1|
@@ -101,7 +125,15 @@ public class waterTerrain implements Runnable
         String location = "";
         Scanner lineScanner = new Scanner(location);
 
-        while(iterator.hasNext())
+        Runnable updateImage = new Runnable() 
+        {
+            public void run() 
+            {
+                deriveWaterImage();
+            }
+        };
+
+        while(iterator.hasNext() &&  noPauseRequested == true) 
         {
             location = iterator.next();
             lineScanner = new Scanner(location);
@@ -147,7 +179,24 @@ public class waterTerrain implements Runnable
         }
 
         lineScanner.close();
+        try 
+        {
+            SwingUtilities.invokeAndWait(updateImage);
+        } 
+        catch (InvocationTargetException e) 
+        {
+            e.printStackTrace();
+        } 
+        catch (InterruptedException e) 
+        {
+            e.printStackTrace();
+        }
+    }
 
+    public void pauseRequest() 
+    {
+        noPauseRequested = false;
+        internalThread.interrupt();
     }
     
 

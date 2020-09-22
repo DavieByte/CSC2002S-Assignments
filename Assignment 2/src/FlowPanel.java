@@ -44,6 +44,8 @@ public class FlowPanel extends JPanel implements Runnable
 
 	public void deriveWaterImage()
 	{
+		waterLocations = water.getWaterLocations();
+		iterator = waterLocations.iterator();
 		Color color = Color.blue;
 		int x,y, location;
 		
@@ -54,6 +56,8 @@ public class FlowPanel extends JPanel implements Runnable
 			y = location % land.dimy;
 			waterImage.setRGB(x, y, color.getRGB());
 		}
+
+		
 	}
 	
 	public void run()

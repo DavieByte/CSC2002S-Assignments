@@ -29,7 +29,7 @@ public class Flow extends JFrame {
 		return (System.currentTimeMillis() - startTime) / 1000.0f;
 	}
 
-	public static void setupGUI(int frameX, int frameY, Terrain landdata) 
+	public static void setupGUI(int frameX, int frameY, Terrain landdata, FlowPanel fp) 
 	{
 		// setting up frame
 		Dimension fsize = new Dimension(800, 800);
@@ -42,7 +42,6 @@ public class Flow extends JFrame {
 		g.setLayout(new BoxLayout(g, BoxLayout.PAGE_AXIS));
 
 		// FlowPanel object
-		fp = new FlowPanel(landData, waterData);
 		fp.setPreferredSize(new Dimension(frameX, frameY));
 		g.add(fp);
 
@@ -51,12 +50,13 @@ public class Flow extends JFrame {
 		b.setLayout(new BoxLayout(b, BoxLayout.LINE_AXIS));
 
 		// implementing action listeners for mouse and buttons
-		frame.addMouseListener(new MouseAdapter() 
+		g.addMouseListener(new MouseAdapter() 
 		{
 			public void mousePressed(MouseEvent e) 
 			{
-				int x = e.getX();
+				int x = e.getX();//doesnt give true x or y
 				int y = e.getY();
+				System.out.println(x + " " + y);
 				// _ _ _ ____________
 				// y -1 |x-1| x |x+1|
 				// _ _ _|___|___|___|
@@ -95,6 +95,7 @@ public class Flow extends JFrame {
 				// to do ask threads to stop
 				pool.shutdown();
 				frame.dispose();
+				System.exit(0);
 			}
 		});
 
@@ -165,10 +166,12 @@ public class Flow extends JFrame {
 		// landscape information from file supplied as argument
 		landData = new Terrain(fileName);
 		waterData = new waterTerrain(landData);
-		
+		fp = new FlowPanel(landData, waterData);
+
 		frameX = landData.getDimX();
 		frameY = landData.getDimY();
-		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landData));
+		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landData, fp));
+
 
 		//creating threads
 		Runnable waterFlowCalculations = waterData;
@@ -180,6 +183,6 @@ public class Flow extends JFrame {
 		//executing threads from task pool
 		pool.execute(waterFlowCalculations);
 		pool.execute(waterPanel);
-		
+
 	}
 }

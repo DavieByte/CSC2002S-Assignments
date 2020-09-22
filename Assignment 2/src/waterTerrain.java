@@ -1,17 +1,17 @@
-//import java.awt.*;
-//import java.awt.event.*;
-//import javax.swing.*;
-//import java.awt.image.*;
-//import java.util.ArrayList;
+import java.awt.image.*;
+import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.CopyOnWriteArrayList;
+//import java.util.concurrent.CopyOnWriteArrayList;
 
-public class waterTerrain implements Runnable
+public class waterTerrain 
 {
     float [][] height; // regular grid of height values
     int dimx, dimy; // data dimensions
     Terrain ground;
-    CopyOnWriteArrayList <Integer> waterLocations = new CopyOnWriteArrayList<Integer>();
+    ArrayList <Integer> waterLocations = new ArrayList<Integer>();
+    BufferedImage waterImage;
+
     
     public waterTerrain(Terrain ground)
     {
@@ -33,7 +33,7 @@ public class waterTerrain implements Runnable
 		return height[x][y];
 	}
 
-	public synchronized void setHeight(int x, int y, int add)
+	public void setHeight(int x, int y, int add)
 	{
         if(x != 0 || y != 0 || x != dimx || y != dimy)
         {
@@ -50,6 +50,28 @@ public class waterTerrain implements Runnable
         }
     }
 
+    public void deriveWaterImage()
+	{
+		Iterator <Integer> iterator = waterLocations.iterator();
+		Color color = Color.blue;
+        int x,y, location;
+        waterImage = new BufferedImage(ground.dimx, ground.dimy, BufferedImage.TYPE_INT_ARGB);
+		
+		while(iterator.hasNext())
+		{
+			location = iterator.next();
+			x = (int) location / ground.dimy;
+			y = location % ground.dimy;
+			waterImage.setRGB(x, y, color.getRGB());
+		}
+    }
+    
+    public BufferedImage getImage() 
+	{
+		  return waterImage;
+	}
+
+    /*
     public CopyOnWriteArrayList<Integer> getWaterLocations()
     {
         return waterLocations;
@@ -103,5 +125,6 @@ public class waterTerrain implements Runnable
         }
 
     }
+    */
 
 }

@@ -5,8 +5,8 @@ import java.awt.event.ActionListener;
 import java.awt.BorderLayout;
 //import java.awt.*;  
 import java.awt.event.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+//import java.util.concurrent.ExecutorService;
+//import java.util.concurrent.Executors;
 
 public class Flow extends JFrame {
 	static long startTime = 0;
@@ -15,7 +15,7 @@ public class Flow extends JFrame {
 	static FlowPanel fp;
 	static Terrain landData;
 	static waterTerrain waterData;
-	static ExecutorService pool;
+	//static ExecutorService pool;
 
 	// start timer
 	private static void tick() 
@@ -81,19 +81,18 @@ public class Flow extends JFrame {
 				waterData.setHeight(x - 1, y + 1, add);
 				waterData.setHeight(x + 1, y + 1, add);
 
-				fp.deriveWaterImage();
+				waterData.deriveWaterImage();
 				fp.repaint();
 			}
 		});
 
 		JButton endB = new JButton("End");
-		;
 		endB.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
 				// to do ask threads to stop
-				pool.shutdown();
+				//pool.shutdown();
 				frame.dispose();
 				System.exit(0);
 			}
@@ -104,7 +103,7 @@ public class Flow extends JFrame {
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				pool.notifyAll();
+				//pool.notifyAll();
 			}
 		});
 
@@ -112,7 +111,7 @@ public class Flow extends JFrame {
 		pauseB.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
-			{
+			{/*
 				try 
 				{
 					pool.wait();
@@ -121,6 +120,7 @@ public class Flow extends JFrame {
 				{
 					e1.printStackTrace();
 				}
+			 */
 			}
 		});
 
@@ -130,7 +130,7 @@ public class Flow extends JFrame {
 			public void actionPerformed(ActionEvent e)
 			{
 				waterData.reset();
-				fp.deriveWaterImage();
+				waterData.deriveWaterImage();
 				fp.repaint();
 			}
 		});
@@ -173,6 +173,8 @@ public class Flow extends JFrame {
 		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landData, fp));
 
 
+
+		/*	
 		//creating threads
 		Runnable waterFlowCalculations = waterData;
 		Runnable waterPanel = fp;
@@ -183,6 +185,7 @@ public class Flow extends JFrame {
 		//executing threads from task pool
 		pool.execute(waterFlowCalculations);
 		pool.execute(waterPanel);
+		*/
 
 	}
 }

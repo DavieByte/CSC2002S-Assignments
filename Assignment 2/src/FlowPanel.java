@@ -1,16 +1,16 @@
 //import java.awt.event.*;
 import java.util.Iterator;
-import java.util.concurrent.CopyOnWriteArrayList;
+//import java.util.concurrent.CopyOnWriteArrayList;
 import java.awt.*; 
 import java.awt.image.*;
 import javax.swing.*;
 
-public class FlowPanel extends JPanel implements Runnable
+public class FlowPanel extends JPanel
 {
 	Terrain land;
 	waterTerrain water;
-	CopyOnWriteArrayList<Integer> waterLocations;
-	Iterator<Integer> iterator;
+	//CopyOnWriteArrayList<Integer> waterLocations;
+	//Iterator<Integer> iterator;
 	BufferedImage waterImage;
 
 	
@@ -18,9 +18,9 @@ public class FlowPanel extends JPanel implements Runnable
 	{
 		land = terrain;
 		water = aqua;
-		waterLocations = aqua.getWaterLocations();
-		iterator = waterLocations.iterator();
-		waterImage = new BufferedImage(land.dimx, land.dimy, BufferedImage.TYPE_INT_ARGB);
+		//waterLocations = aqua.getWaterLocations();
+		//iterator = waterLocations.iterator();
+		//waterImage = new BufferedImage(land.dimx, land.dimy, BufferedImage.TYPE_INT_ARGB);
 	}
 		
 	// responsible for painting the terrain and water
@@ -38,10 +38,10 @@ public class FlowPanel extends JPanel implements Runnable
 
 		if(waterImage != null)
 		{
-			g.drawImage(waterImage, 0, 0, null);
+			g.drawImage(water.getImage(), 0, 0, null);
 		}
 	}
-
+	/*
 	public void deriveWaterImage()
 	{
 		waterLocations = water.getWaterLocations();
@@ -65,4 +65,5 @@ public class FlowPanel extends JPanel implements Runnable
 		deriveWaterImage();
 		repaint();
 	}
+	*/
 }

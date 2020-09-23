@@ -8,7 +8,8 @@ import java.awt.event.*;
 //import java.util.concurrent.ExecutorService;
 //import java.util.concurrent.Executors;
 
-public class Flow extends JFrame {
+public class Flow extends JFrame 
+{
 	static long startTime = 0;
 	static int frameX;
 	static int frameY;
@@ -42,7 +43,7 @@ public class Flow extends JFrame {
 		g.setLayout(new BoxLayout(g, BoxLayout.PAGE_AXIS));
 
 		// FlowPanel object
-		FlowPanel fp = new FlowPanel(landData, waterData);
+		fp = new FlowPanel(landData, waterData);
 		fp.setPreferredSize(new Dimension(frameX, frameY));
 		g.add(fp);
 
@@ -103,8 +104,7 @@ public class Flow extends JFrame {
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				//pool.notifyAll();
-				
+				waterdata.play();
 			}
 		});
 
@@ -112,16 +112,8 @@ public class Flow extends JFrame {
 		pauseB.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
-			{/*
-				try 
-				{
-					pool.wait();
-				} 
-				catch (InterruptedException e1) 
-				{
-					e1.printStackTrace();
-				}
-			 */
+			{
+				waterdata.pause();
 			}
 		});
 
@@ -148,7 +140,9 @@ public class Flow extends JFrame {
       	frame.add(g); //add contents to window
         frame.setContentPane(g);
         frame.setVisible(true);
-        
+		
+		Thread fpt = new Thread(fp);
+        fpt.start();
 	}
 	
 	
@@ -167,28 +161,15 @@ public class Flow extends JFrame {
 		// landscape information from file supplied as argument
 		landData = new Terrain(fileName);
 		waterData = new waterTerrain(landData);
-		//fp = new FlowPanel(landData, waterData);
+		Thread flow = new Thread(waterData);
+
+		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landData, waterData));
+
 
 		frameX = landData.getDimX();
 		frameY = landData.getDimY();
-		SwingUtilities.invokeLater(()->setupGUI(frameX, frameY, landData, waterData));
 
-		Thread flow = new Thread(waterData);
 		flow.start();
-
-
-		/*	
-		//creating threads
-		Runnable waterFlowCalculations = waterData;
-		Runnable waterPanel = fp;
-		
-		// creating task pool for threads
-		pool = Executors.newFixedThreadPool(3);
-
-		//executing threads from task pool
-		pool.execute(waterFlowCalculations);
-		pool.execute(waterPanel);
-		*/
 
 	}
 }

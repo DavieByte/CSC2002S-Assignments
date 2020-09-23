@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.image.*;
 import javax.swing.*;
 
-public class FlowPanel extends JPanel
+public class FlowPanel extends JPanel implements Runnable
 {
 	private static final long serialVersionUID = 1L;
 	Terrain land;
@@ -40,6 +40,22 @@ public class FlowPanel extends JPanel
 		if(water.getImage() != null)
 		{
 			g.drawImage(water.getImage(), 0, 0, null);
+		}
+	}
+	
+	public void run()
+	{
+		while(true)
+		{
+			try 
+			{
+				Thread.sleep(1000);
+				repaint();
+			} 
+			catch (InterruptedException e) 
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 
